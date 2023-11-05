@@ -6,11 +6,13 @@ import LogIn from "../pages/LogIn";
 import SignUp from "../pages/SignUp";
 import ForgotPassword from "../pages/ForgotPassword";
 import Error from "../pages/Error";
+import Navbar from "../layouts/Navbar";
 
 const Index = () => {
   return (
     <>
       <Router>
+        <Navbar />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/offers" element={<Offers />} />
