@@ -1,8 +1,10 @@
+import Index from "./Routing/Index";
+
 const App = () => {
   return (
-    <div>
-      <h1 className="text-3xl underline">hello</h1>
-    </div>
+    <>
+      <Index />
+    </>
   );
 };
 
