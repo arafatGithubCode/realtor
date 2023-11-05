@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 const Navbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
+
   const pathMatchRoute = (route) => {
     if (route === location.pathname) {
       return true;
@@ -23,7 +24,7 @@ const Navbar = () => {
         <div>
           <ul className="flex space-x-10">
             <li
-              className={`cursor-pointer py-3 text-sm font-semibold text-gray-400 border-b-[3px] border-b-transparent ${
+              className={`cursor-pointer py-3 text-sm font-semibold text-gray-400 border-b-[3px] ${
                 pathMatchRoute("/") && "text-black border-b-red-500"
               }`}
               onClick={() => navigate("/")}
@@ -31,7 +32,7 @@ const Navbar = () => {
               Home
             </li>
             <li
-              className={`cursor-pointer py-3 text-sm font-semibold text-gray-400 border-b-[3px] border-b-transparent ${
+              className={`cursor-pointer py-3 text-sm font-semibold text-gray-400 border-b-[3px] ${
                 pathMatchRoute("/offers") && "text-black border-b-red-500"
               }`}
               onClick={() => navigate("/offers")}
@@ -39,7 +40,7 @@ const Navbar = () => {
               Offers
             </li>
             <li
-              className={`cursor-pointer py-3 text-sm font-semibold text-gray-400 border-b-[3px] border-b-transparent ${
+              className={`cursor-pointer py-3 text-sm font-semibold text-gray-400 border-b-[3px] ${
                 pathMatchRoute("/sign-in") && "text-black border-b-red-500"
               }`}
               onClick={() => navigate("/sign-in")}
