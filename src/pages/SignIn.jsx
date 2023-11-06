@@ -4,7 +4,12 @@ import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
 import { useState } from "react";
 import GoogleBtn from "../components/GoogleBtn";
 
+import { signInWithEmailAndPassword, getAuth } from "firebase/auth";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+
 const SignIn = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -14,11 +19,27 @@ const SignIn = () => {
   const { email, password } = formData;
 
   const handleChange = (e) => {
-    console.log(e.target.value);
     setFormData((prevState) => ({
       ...prevState,
       [e.target.id]: e.target.value,
     }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const auth = getAuth();
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      if (userCredential.user) {
+        navigate("/");
+      }
+    } catch (error) {
+      toast.error("Bad user credentials");
+    }
   };
 
   return (
@@ -33,14 +54,13 @@ const SignIn = () => {
           />
         </div>
         <div className="w-full md:w-[67%] lg:w-[40%] lg:ml-20">
-          <form>
+          <form onSubmit={handleSubmit}>
             <input
               type="email"
               placeholder="example@gmail.com"
               value={email}
               id="email"
               name="email"
-              required
               onChange={handleChange}
               className="w-full px-4 py-2 rounded text-xl border-gray-300 text-gray-700 transition ease-in-out bg-white mb-6"
             />
@@ -51,7 +71,6 @@ const SignIn = () => {
                 value={password}
                 id="password"
                 name="password"
-                required
                 onChange={handleChange}
                 className="w-full px-4 py-2 rounded text-xl border-gray-300 text-gray-700 transition ease-in-out bg-white"
               />
