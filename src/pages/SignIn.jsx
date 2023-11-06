@@ -40,6 +40,7 @@ const SignIn = () => {
               value={email}
               id="email"
               name="email"
+              required
               onChange={handleChange}
               className="w-full px-4 py-2 rounded text-xl border-gray-300 text-gray-700 transition ease-in-out bg-white mb-6"
             />
@@ -50,6 +51,7 @@ const SignIn = () => {
                 value={password}
                 id="password"
                 name="password"
+                required
                 onChange={handleChange}
                 className="w-full px-4 py-2 rounded text-xl border-gray-300 text-gray-700 transition ease-in-out bg-white"
               />

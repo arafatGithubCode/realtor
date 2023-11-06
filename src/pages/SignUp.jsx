@@ -1,8 +1,17 @@
 /* eslint-disable react/no-unescaped-entities */
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { AiFillEyeInvisible, AiFillEye } from "react-icons/ai";
 import { useState } from "react";
 import GoogleBtn from "../components/GoogleBtn";
+
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
+import { db } from "../firebase";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
+import { toast } from "react-toastify";
 
 const SignUn = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -12,6 +21,8 @@ const SignUn = () => {
     password: "",
   });
 
+  const navigate = useNavigate();
+
   const { name, email, password } = formData;
 
   const handleChange = (e) => {
@@ -19,6 +30,30 @@ const SignUn = () => {
       ...prevState,
       [e.target.id]: e.target.value,
     }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const auth = getAuth();
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      updateProfile(auth.currentUser, {
+        displayName: name,
+      });
+      const users = userCredential.user;
+      const formDataCopy = { ...formData };
+      delete formDataCopy.password;
+      formDataCopy.timestamp = serverTimestamp();
+      await setDoc(doc(db, "users", users.uid), formDataCopy);
+      navigate("/");
+      toast.success("Sign up was successful");
+    } catch (error) {
+      toast.error("Something went wrong with the registration");
+    }
   };
 
   return (
@@ -33,7 +68,7 @@ const SignUn = () => {
           />
         </div>
         <div className="w-full md:w-[67%] lg:w-[40%] lg:ml-20">
-          <form>
+          <form onSubmit={handleSubmit}>
             <input
               type="text"
               placeholder="full name"

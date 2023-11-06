@@ -8,6 +8,9 @@ import ForgotPassword from "../pages/ForgotPassword";
 import Error from "../pages/Error";
 import Navbar from "../layouts/Navbar";
 
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 const Index = () => {
   return (
     <>
@@ -22,6 +25,18 @@ const Index = () => {
           <Route path="*" element={<Error />} />
         </Routes>
       </Router>
+      <ToastContainer
+        position="bottom-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
     </>
   );
 };
