@@ -2,12 +2,26 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import GoogleBtn from "../components/GoogleBtn";
+import { toast } from "react-toastify";
+import { getAuth, sendPasswordResetEmail } from "firebase/auth";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
 
   const handleChange = (e) => {
     setEmail(e.target.value);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const auth = getAuth();
+      await sendPasswordResetEmail(auth, email);
+      toast.success("Email was send");
+      setEmail("");
+    } catch (error) {
+      toast.error("Could not send reset password");
+    }
   };
 
   return (
@@ -22,14 +36,13 @@ const ForgotPassword = () => {
           />
         </div>
         <div className="w-full md:w-[67%] lg:w-[40%] lg:ml-20">
-          <form>
+          <form onSubmit={handleSubmit}>
             <input
               type="email"
               placeholder="Email address"
               value={email}
               id="email"
               name="email"
-              required
               onChange={handleChange}
               className="w-full px-4 py-2 rounded text-xl border-gray-300 text-gray-700 transition ease-in-out bg-white mb-6"
             />
