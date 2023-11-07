@@ -7,6 +7,8 @@ import SignUp from "../pages/SignUp";
 import ForgotPassword from "../pages/ForgotPassword";
 import Error from "../pages/Error";
 import Navbar from "../layouts/Navbar";
+import Profile from "../pages/Profile";
+import PrivateRoute from "./PrivateRoute";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -21,6 +23,9 @@ const Index = () => {
           <Route path="/offers" element={<Offers />} />
           <Route path="/sign-in" element={<SignIn />} />
           <Route path="/sign-up" element={<SignUp />} />
+          <Route path="/profile" element={<PrivateRoute />}>
+            <Route path="/profile" element={<Profile />} />
+          </Route>
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="*" element={<Error />} />
         </Routes>
