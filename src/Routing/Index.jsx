@@ -12,6 +12,7 @@ import PrivateRoute from "./PrivateRoute";
 
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import CreateListing from "../pages/CreateListing";
 
 const Index = () => {
   return (
@@ -27,6 +28,7 @@ const Index = () => {
             <Route path="/profile" element={<Profile />} />
           </Route>
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/create-listing" element={<CreateListing />} />
           <Route path="*" element={<Error />} />
         </Routes>
       </Router>
