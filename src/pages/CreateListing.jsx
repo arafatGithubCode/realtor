@@ -1,6 +1,21 @@
 import { useState } from "react";
-
+import Spinner from "../components/Spinner";
+import { toast } from "react-toastify";
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { v4 as uuidv4 } from "uuid";
+import { db } from "../firebase";
+import { useNavigate } from "react-router";
 const CreateListing = () => {
+  const navigate = useNavigate();
+  const auth = getAuth();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     type: "rent",
     name: "",
@@ -12,7 +27,8 @@ const CreateListing = () => {
     description: "",
     offer: false,
     regularPrice: 0,
-    discount: 0,
+    discountedPrice: 0,
+    images: {},
   });
   const {
     type,
@@ -25,14 +41,116 @@ const CreateListing = () => {
     description,
     offer,
     regularPrice,
-    discount,
+    discountedPrice,
+    images,
   } = formData;
 
-  const onChange = () => {};
+  const onChange = (e) => {
+    let boolean = null;
+    if (e.target.value === "true") {
+      boolean = true;
+    }
+    if (e.target.value === "false") {
+      boolean = false;
+    }
+    //files
+    if (e.target.files) {
+      setFormData((prevState) => ({
+        ...prevState,
+        images: e.target.files,
+      }));
+    }
+    //text/boolean/number
+    if (!e.target.files) {
+      setFormData((prevState) => ({
+        ...prevState,
+        [e.target.id]: boolean ?? e.target.value,
+      }));
+    }
+  };
+
+  const onSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    if (+discountedPrice >= +regularPrice) {
+      setLoading(false);
+      toast.error("Discounted price should be less then regular price");
+      return;
+    }
+    if (images.length > 6) {
+      setLoading(false);
+      toast.error("Maximum 6 images are allowed");
+      return;
+    }
+
+    const storeImage = async (image) => {
+      return new Promise((resolve, reject) => {
+        const storage = getStorage();
+        const fileName = `${auth.currentUser.uid}-${image.name}-${uuidv4()}`;
+        const storageRef = ref(storage, fileName);
+        const uploadTask = uploadBytesResumable(storageRef, image);
+        uploadTask.on(
+          "state_changed",
+          (snapshot) => {
+            // Observe state change events such as progress, pause, and resume
+            // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
+            const progress =
+              (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            console.log("Upload is " + progress + "% done");
+            switch (snapshot.state) {
+              case "paused":
+                console.log("Upload is paused");
+                break;
+              case "running":
+                console.log("Upload is running");
+                break;
+            }
+          },
+          (error) => {
+            // Handle unsuccessful uploads
+            reject(error);
+          },
+          () => {
+            // Handle successful uploads on complete
+            // For instance, get the download URL: https://firebasestorage.googleapis.com/...
+            getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+              resolve(downloadURL);
+            });
+          }
+        );
+      });
+    };
+
+    const imgUrls = await Promise.all(
+      [...images].map((image) =>
+        storeImage(image).catch((error) => {
+          setLoading(false);
+          toast.error("Images are not uploaded");
+          return;
+        })
+      )
+    );
+
+    const formDataCopy = {
+      ...formData,
+      imgUrls,
+      timestamp: serverTimestamp(),
+    };
+    delete formDataCopy.images;
+    !formDataCopy.offer && delete formDataCopy.discountedPrice;
+    const docRef = await addDoc(collection(db, "listings"), formDataCopy);
+    setLoading(false);
+    toast.success("Listing created");
+    navigate(`/category/${formDataCopy.type}/${docRef.id}`);
+  };
+
+  if (loading) {
+    return <Spinner />;
+  }
   return (
     <main className="max-w-md mx-auto px-3">
       <h2 className="text-3xl font-bold text-center mt-6">Create a Listing</h2>
-      <form>
+      <form onSubmit={onSubmit}>
         <p className="text-lg mt-6 font-semibold">Sell / Rent</p>
         <div className="flex gap-4 items-center">
           <button
@@ -41,9 +159,9 @@ const CreateListing = () => {
                 ? "bg-white text-black"
                 : "bg-slate-600 text-white"
             }`}
-            name="sell"
-            id="sell"
+            id="type"
             type="button"
+            value="sell"
             onClick={onChange}
           >
             sell
@@ -54,9 +172,9 @@ const CreateListing = () => {
                 ? "bg-white text-black"
                 : "bg-slate-600 text-white"
             }`}
-            name="rent"
-            id="rent"
+            id="type"
             type="button"
+            value="rent"
             onClick={onChange}
           >
             Rent
@@ -111,7 +229,7 @@ const CreateListing = () => {
             id="parking"
             name="parking"
             type="button"
-            onChange={onChange}
+            onClick={onChange}
             value={true}
             className={`uppercase font-medium px-6 py-2 shadow rounded border-gray-300 hover:shadow-lg focus:shadow-lg active:shadow-lg w-full transition duration-200 ease-in-out ${
               !parking ? "bg-white text-black" : "bg-slate-500 text-white"
@@ -123,7 +241,7 @@ const CreateListing = () => {
             id="parking"
             name="parking"
             type="button"
-            onChange={onChange}
+            onClick={onChange}
             value={false}
             className={`uppercase font-medium px-6 py-2 shadow rounded border-gray-300 hover:shadow-lg focus:shadow-lg active:shadow-lg w-full transition duration-200 ease-in-out ${
               parking ? "bg-white text-black" : "bg-slate-600 text-white"
@@ -139,6 +257,7 @@ const CreateListing = () => {
             id="furnish"
             name="furnish"
             value={true}
+            onClick={onChange}
             className={`font-medium uppercase px-5 py-2 shadow rounded hover:shadow-lg focus:shadow-lg active:shadow-lg border-gray-300 transition duration-200 ease-in-out w-full ${
               !furnish ? "bg-white text-black" : "bg-slate-600 text-white"
             }`}
@@ -150,6 +269,7 @@ const CreateListing = () => {
             id="furnish"
             name="furnish"
             value={false}
+            onClick={onChange}
             className={`font-medium uppercase px-5 py-2 shadow rounded hover:shadow-lg focus:shadow-lg active:shadow-lg border-gray-300 transition duration-200 ease-in-out w-full ${
               furnish ? "bg-white text-black" : "bg-slate-600 text-white"
             }`}
@@ -164,6 +284,8 @@ const CreateListing = () => {
           placeholder="Address"
           onChange={onChange}
           value={address}
+          minLength="10"
+          maxLength="1000"
           className="w-full border-gray-300 rounded placeholder:text-xl mb-6 bg-white"
         ></textarea>
         <p className="text-xl font-semibold">Description</p>
@@ -173,6 +295,8 @@ const CreateListing = () => {
           placeholder="Description"
           onChange={onChange}
           value={description}
+          minLength="10"
+          maxLength="1000"
           className="w-full mb-6 border-gray-300 rounded placeholder:text-xl"
         ></textarea>
         <p className="text-xl font-semibold">Offer</p>
@@ -181,7 +305,8 @@ const CreateListing = () => {
             type="button"
             id="offer"
             name="offer"
-            value={offer}
+            value={true}
+            onClick={onChange}
             className={`uppercase font-medium px-6 py-2 shadow rounded w-full hover:shadow-lg focus:shadow-lg active:shadow-lg transition duration-200 ease-in-out ${
               !offer ? "bg-white text-black" : "bg-slate-600 text-white"
             }`}
@@ -192,7 +317,8 @@ const CreateListing = () => {
             type="button"
             id="offer"
             name="offer"
-            value={offer}
+            value={false}
+            onClick={onChange}
             className={`uppercase font-medium px-6 py-2 shadow rounded w-full hover:shadow-lg focus:shadow-lg active:shadow-lg transition duration-200 ease-in-out ${
               offer ? "bg-white text-black" : "bg-slate-600 text-white"
             }`}
@@ -208,6 +334,7 @@ const CreateListing = () => {
             id="regularPrice"
             onChange={onChange}
             value={regularPrice}
+            min="50"
             className="text-center border-gray-300 rounded px-6 py-2 w-40 text-xl focus:border-slate-700"
           />
           {type === "rent" && (
@@ -221,12 +348,10 @@ const CreateListing = () => {
             <p className="text-xl font-semibold">Discounted Price</p>
             <input
               type="number"
-              name="discount"
-              id="discount"
+              id="discountedPrice"
               onChange={onChange}
-              value={discount}
+              value={discountedPrice}
               min="0"
-              max="100"
               className="text-center text-xl border-gray-300 w-2/4 rounded px-6 py-2"
             />
           </div>
@@ -237,8 +362,7 @@ const CreateListing = () => {
         </p>
         <input
           type="file"
-          name="image"
-          id="image"
+          id="images"
           onChange={onChange}
           required
           multiple
