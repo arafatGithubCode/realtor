@@ -123,7 +123,7 @@ const CreateListing = () => {
 
     const imgUrls = await Promise.all(
       [...images].map((image) =>
-        storeImage(image).catch((error) => {
+        storeImage(image).catch(() => {
           setLoading(false);
           toast.error("Images are not uploaded");
           return;
@@ -135,6 +135,7 @@ const CreateListing = () => {
       ...formData,
       imgUrls,
       timestamp: serverTimestamp(),
+      userRef: auth.currentUser.uid,
     };
     delete formDataCopy.images;
     !formDataCopy.offer && delete formDataCopy.discountedPrice;
