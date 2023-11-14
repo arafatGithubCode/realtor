@@ -21,6 +21,7 @@ import ListingItem from "../components/ListingItem";
 const Profile = () => {
   const navigate = useNavigate();
   const auth = getAuth();
+
   const [changeDetail, setChangeDetail] = useState(false);
   const [listings, setListings] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -28,6 +29,7 @@ const Profile = () => {
     name: auth.currentUser.displayName,
     email: auth.currentUser.email,
   });
+
   const { name, email } = formData;
 
   const handleSignOut = () => {
@@ -146,7 +148,7 @@ const Profile = () => {
         {!loading && listings.length > 0 && (
           <>
             <h2 className="text-2xl text-center font-semibold">My Listings</h2>
-            <ul>
+            <ul className="my-6 sm:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
               {listings.map((listing) => (
                 <ListingItem
                   key={listing.id}

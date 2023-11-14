@@ -16,6 +16,7 @@ const CreateListing = () => {
   const navigate = useNavigate();
   const auth = getAuth();
   const [loading, setLoading] = useState(false);
+
   const [formData, setFormData] = useState({
     type: "rent",
     name: "",
