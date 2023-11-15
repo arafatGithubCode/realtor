@@ -2,8 +2,10 @@ import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 import Moment from "react-moment";
 import { MdLocationPin } from "react-icons/md";
+import { FaRegTrashAlt } from "react-icons/fa";
+import { MdEdit } from "react-icons/md";
 
-const ListingItem = ({ listing, id }) => {
+const ListingItem = ({ listing, id, onDelete, onEdit }) => {
   return (
     <li className="relative flex flex-col justify-between items-center bg-white rounded-md overflow-hidden shadow-md hover:shadow-lg transition-shadow duration-150 ease-in-out m-[10px]">
       <Link className="contents" to={`category/${listing.type}/${id}`}>
@@ -55,12 +57,26 @@ const ListingItem = ({ listing, id }) => {
           </div>
         </div>
       </Link>
+      {onDelete && (
+        <FaRegTrashAlt
+          className="absolute bottom-2 right-2 cursor-pointer text-red-500 h-[14px]"
+          onClick={() => onDelete(listing.id)}
+        />
+      )}
+      {onEdit && (
+        <MdEdit
+          className="absolute bottom-2 right-8 cursor-pointer text-black h-4"
+          onClick={() => onEdit(listing.id)}
+        />
+      )}
     </li>
   );
 };
 
 ListingItem.propTypes = {
   id: PropTypes.any,
+  onDelete: PropTypes.any,
+  onEdit: PropTypes.any,
   listing: PropTypes.shape({
     type: PropTypes.any,
     imgUrls: PropTypes.arrayOf(PropTypes.any),
@@ -72,6 +88,7 @@ ListingItem.propTypes = {
     offer: PropTypes.any,
     bedrooms: PropTypes.any,
     bathrooms: PropTypes.any,
+    id: PropTypes.any,
   }),
 };
 
