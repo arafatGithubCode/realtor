@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 import Spinner from "../components/Spinner";
 
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -20,12 +21,15 @@ import { FaBed } from "react-icons/fa";
 import { FaBath } from "react-icons/fa";
 import { FaParking } from "react-icons/fa";
 import { FaChair } from "react-icons/fa";
+import Contact from "../components/Contact";
 
 const Listing = () => {
+  const auth = getAuth();
   const params = useParams();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [shareLinkCopied, setShareLinkCopied] = useState(false);
+  const [contactLandlord, setContactLandlord] = useState(false);
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -82,7 +86,7 @@ const Listing = () => {
         </p>
       )}
       <div className="flex flex-col md:flex-row max-w-6xl lg:mx-auto m-4 p-4 shadow-lg rounded-lg lg:space-x-5">
-        <div className="w-full h-[200px] lg:h-[400px]">
+        <div className="w-full">
           <p className="text-2xl text-blue-900 font-bold">
             {listing.name} -{" "}
             {listing.offer
@@ -94,10 +98,10 @@ const Listing = () => {
                   .replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
             {listing.type === "rent" && " / month"}
           </p>
-          <p className="flex justify-start items-center gap-2 my-3">
+          <div className="flex justify-start items-center gap-2 my-3">
             <FaMapMarkerAlt className="text-green-600" />
             <p className="text-sm font-bold md:text-md">{listing.address}</p>
-          </p>
+          </div>
           <div className="w-[75%] flex justify-start items-center gap-4">
             <p className="bg-red-800 text-white p-1 rounded-md text-center font-semibold w-full max-w-[200px]">
               {listing.type === "rent" ? "For Rent" : "For Sale"}
@@ -130,6 +134,19 @@ const Listing = () => {
               {listing.furnish ? "Furnished" : "Not Furnished"}
             </li>
           </ul>
+          {listing.userRef !== auth.currentUser?.uid && !contactLandlord && (
+            <div>
+              <button
+                onClick={() => setContactLandlord(true)}
+                className="w-full mb-6 bg-blue-600 text-white uppercase px-7 py-2 rounded font-semibold text-center hover:bg-blue-700 focus:bg-blue-700 shadow-md hover:shadow-lg focus:shadow-lg transition duration-200 ease-in-out"
+              >
+                contact landlord
+              </button>
+            </div>
+          )}
+          {contactLandlord && (
+            <Contact userRef={listing.userRef} listing={listing} />
+          )}
         </div>
         <div className="bg-blue-300 w-full h-[200px] lg:h-[400px] overflow-x-hidden z-10 mt-6"></div>
       </div>
