@@ -110,11 +110,11 @@ const Listing = () => {
             <p className="bg-red-800 text-white p-1 rounded-md text-center font-semibold w-full max-w-[200px]">
               {listing.type === "rent" ? "For Rent" : "For Sale"}
             </p>
-            <p className="bg-green-800 text-white p-1 font-semibold rounded-md w-full max-w-[200px] text-center md:text-sm lg:text-lg">
-              {listing.offer && (
+            {listing.offer && (
+              <p className="bg-green-800 text-white p-1 font-semibold rounded-md w-full max-w-[200px] text-center md:text-sm lg:text-lg">
                 <>${listing.regularPrice - listing.discountedPrice} discount</>
-              )}
-            </p>
+              </p>
+            )}
           </div>
           <p className="my-3">
             <strong>Description - </strong>
